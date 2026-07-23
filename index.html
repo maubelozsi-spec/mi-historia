@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#2c3550">
+<title>Mi Historia — escribe tu novela</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<!-- ============ CABECERA ============ -->
+<header id="cabecera">
+  <button id="btn-inicio" class="btn-icono" title="Mis novelas">📚</button>
+  <h1 id="titulo-app">Mi Historia</h1>
+  <span id="nombre-proyecto" class="nombre-proyecto"></span>
+  <div class="cabecera-derecha">
+    <span id="indicador-guardado" title="Estado de guardado">●</span>
+    <button id="btn-diario" class="btn-icono" title="Mi diario">🔒</button>
+  </div>
+</header>
+
+<!-- ============ NAVEGACIÓN ============ -->
+<nav id="nav-principal" class="oculto">
+  <button data-vista="escribir" class="nav-btn activo">✍️ Escribir</button>
+  <button data-vista="fichas" class="nav-btn">🗂️ Fichas</button>
+  <button data-vista="mapa" class="nav-btn">🕸️ Relaciones</button>
+  <button data-vista="tiempo" class="nav-btn">🕰️ Línea temporal</button>
+  <button data-vista="entornos" class="nav-btn">🏞️ Entornos</button>
+  <button data-vista="biblioteca" class="nav-btn">📖 Biblioteca</button>
+  <button data-vista="copia" class="nav-btn">💾 Copias</button>
+</nav>
+
+<main id="contenido">
+
+  <!-- ============ INICIO: MIS NOVELAS ============ -->
+  <section id="vista-inicio" class="vista">
+    <div class="panel-centrado">
+      <h2>Mis novelas</h2>
+      <div id="lista-proyectos" class="lista-proyectos"></div>
+      <button id="btn-nueva-novela" class="btn-primario">+ Nueva novela</button>
+      <p class="nota-pie">Todo se guarda automáticamente en este dispositivo.
+        <span id="estado-sync">Sincronización en la nube: pendiente de configurar.</span></p>
+    </div>
+  </section>
+
+  <!-- ============ ESCRIBIR ============ -->
+  <section id="vista-escribir" class="vista oculto">
+    <aside id="panel-capitulos">
+      <div class="panel-cabecera">
+        <h3>Capítulos</h3>
+        <button id="btn-nuevo-capitulo" class="btn-mini" title="Nuevo capítulo">+</button>
+      </div>
+      <ul id="lista-capitulos"></ul>
+    </aside>
+
+    <div id="zona-editor">
+      <div id="barra-editor">
+        <button id="btn-toggle-capitulos" class="btn-icono" title="Mostrar/ocultar capítulos">☰</button>
+        <input id="titulo-capitulo" type="text" placeholder="Título del capítulo">
+        <div class="barra-derecha">
+          <span id="contador-palabras" title="Palabras del capítulo / total">0</span>
+          <button id="btn-dictar" class="btn-icono btn-mic" title="Dictar (mantén una selección para sustituirla)">🎙️</button>
+          <button id="btn-enfoque" class="btn-icono" title="Modo enfoque">⛶</button>
+        </div>
+      </div>
+
+      <!-- Barra de comandos SIEMPRE visible -->
+      <div id="barra-comandos" title="Escribe el nombre y el comando, o díctalo: «abrir paréntesis pe cerrar paréntesis»">
+        <span class="cmd" data-cmd="p"><b>(p)</b> personaje</span>
+        <span class="cmd" data-cmd="l"><b>(l)</b> lugar</span>
+        <span class="cmd" data-cmd="o"><b>(o)</b> objeto</span>
+        <span class="cmd" data-cmd="t"><b>(t)</b> nota de trama</span>
+        <span class="cmd-ayuda" id="btn-ayuda-voz">🎙️ comandos de voz</span>
+      </div>
+
+      <div id="editor" contenteditable="true" spellcheck="true" lang="es"
+           data-placeholder="Érase una vez… escribe aquí o pulsa el micrófono para dictar."></div>
+
+      <div id="pie-editor">
+        <span id="objetivo-estado"></span>
+        <span id="estado-dictado"></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FICHAS ============ -->
+  <section id="vista-fichas" class="vista oculto">
+    <div class="subnav">
+      <button data-tipo="p" class="subnav-btn activo">👤 Personajes</button>
+      <button data-tipo="l" class="subnav-btn">📍 Lugares</button>
+      <button data-tipo="o" class="subnav-btn">🗝️ Objetos</button>
+      <button data-tipo="t" class="subnav-btn">🧵 Notas de trama</button>
+      <button class="subnav-btn btn-generador">🎲 Generador de nombres</button>
+      <button id="btn-nueva-ficha" class="btn-primario btn-mini-primario">+ Nueva ficha</button>
+    </div>
+    <div id="lista-fichas" class="rejilla-fichas"></div>
+  </section>
+
+  <!-- ============ MAPA DE RELACIONES ============ -->
+  <section id="vista-mapa" class="vista oculto">
+    <div class="subnav">
+      <button id="btn-nueva-relacion" class="btn-primario btn-mini-primario">→ Nueva relación</button>
+      <span class="nota">Arrastra las tarjetas para ordenar el mapa. Toca una flecha para editarla.</span>
+    </div>
+    <div id="lienzo-contenedor"><svg id="lienzo-mapa"></svg></div>
+  </section>
+
+  <!-- ============ LÍNEA TEMPORAL DE LA NOVELA ============ -->
+  <section id="vista-tiempo" class="vista oculto">
+    <div class="subnav">
+      <button id="btn-nuevo-evento" class="btn-primario btn-mini-primario">+ Nuevo hecho</button>
+      <span class="nota">Los hechos se ordenan por su número de orden. El «momento» es libre: «Año 3021», «La noche del incendio»…</span>
+    </div>
+    <div id="linea-temporal" class="linea-temporal"></div>
+  </section>
+
+  <!-- ============ ENTORNOS ============ -->
+  <section id="vista-entornos" class="vista oculto">
+    <div class="subnav">
+      <button id="btn-nuevo-entorno" class="btn-primario btn-mini-primario">+ Crear entorno</button>
+      <button id="btn-ia-entorno" class="btn-ia" disabled title="Se activará cuando configures la clave de IA">✨ Generar con IA (próximamente)</button>
+    </div>
+    <div id="lista-entornos" class="rejilla-fichas"></div>
+  </section>
+
+  <!-- ============ BIBLIOTECA ============ -->
+  <section id="vista-biblioteca" class="vista oculto">
+    <div class="subnav">
+      <span class="nota">Tus autores de referencia: técnica narrativa aplicada a tu novela.</span>
+      <button id="btn-ia-autor" class="btn-ia" disabled title="Se activará cuando configures la clave de IA">✨ ¿Cómo lo haría este autor? (próximamente)</button>
+    </div>
+    <div id="contenido-biblioteca"></div>
+  </section>
+
+  <!-- ============ COPIAS DE SEGURIDAD ============ -->
+  <section id="vista-copia" class="vista oculto">
+    <div class="panel-centrado">
+      <h2>Copias de seguridad</h2>
+      <div class="tarjeta">
+        <h3>Exportar</h3>
+        <p>Descarga tu novela para imprimirla, enviarla o guardarla en tu Drive.</p>
+        <button id="btn-exportar-docx" class="btn-primario">📄 Novela en Word (.doc)</button>
+        <button id="btn-exportar-json" class="btn-secundario">🗄️ Copia completa (.json)</button>
+      </div>
+      <div class="tarjeta">
+        <h3>Recuperar</h3>
+        <p>Restaura una copia completa (.json) exportada anteriormente.</p>
+        <input type="file" id="input-importar" accept=".json" class="oculto">
+        <button id="btn-importar" class="btn-secundario">📥 Importar copia (.json)</button>
+      </div>
+      <div class="tarjeta">
+        <h3>Instantáneas automáticas</h3>
+        <p>Cada día que escribes se guarda una foto de todo. Aquí puedes volver atrás.</p>
+        <ul id="lista-instantaneas"></ul>
+      </div>
+      <div class="tarjeta">
+        <h3>Papelera</h3>
+        <p>Lo borrado se guarda 30 días antes de eliminarse del todo.</p>
+        <ul id="lista-papelera"></ul>
+      </div>
+      <div class="tarjeta">
+        <h3>Objetivo de escritura</h3>
+        <p>Palabras al día: <input type="number" id="input-objetivo" min="0" step="50" style="width:6em">
+           <span id="racha-info"></span></p>
+      </div>
+      <div class="tarjeta" id="tarjeta-sync">
+        <h3>Sincronización en la nube</h3>
+        <p id="texto-sync">Aún no configurada. Cuando creemos tu proyecto de Firebase, tus novelas se
+        sincronizarán solas entre el ordenador y el móvil.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ MI DIARIO ============ -->
+  <section id="vista-diario" class="vista oculto">
+    <!-- Puerta con código -->
+    <div id="diario-puerta" class="panel-centrado">
+      <div class="tarjeta tarjeta-diario">
+        <h2>🔒 Mi diario</h2>
+        <p id="diario-puerta-texto">Introduce tu código para entrar.</p>
+        <input type="password" id="input-codigo-diario" placeholder="Código alfanumérico" autocomplete="off">
+        <input type="password" id="input-codigo-diario2" placeholder="Repite el código" autocomplete="off" class="oculto">
+        <button id="btn-entrar-diario" class="btn-primario">Entrar</button>
+        <p id="diario-error" class="texto-error"></p>
+      </div>
+    </div>
+    <!-- Interior del diario -->
+    <div id="diario-interior" class="oculto">
+      <aside id="panel-entradas">
+        <div class="panel-cabecera">
+          <h3>Entradas</h3>
+          <button id="btn-nueva-entrada" class="btn-mini" title="Nueva entrada">+</button>
+        </div>
+        <div class="subnav-vertical">
+          <button id="btn-diario-lista" class="subnav-btn activo">Lista</button>
+          <button id="btn-diario-tiempo" class="subnav-btn">Línea temporal</button>
+          <button id="btn-salir-diario" class="subnav-btn">Cerrar 🔒</button>
+        </div>
+        <ul id="lista-entradas"></ul>
+      </aside>
+      <div id="zona-diario">
+        <div id="barra-diario">
+          <button id="btn-toggle-entradas" class="btn-icono" title="Mostrar/ocultar entradas">☰</button>
+          <input id="titulo-entrada" type="text" placeholder="Título de la entrada">
+          <span id="fecha-entrada"></span>
+          <button id="btn-dictar-diario" class="btn-icono btn-mic" title="Dictar">🎙️</button>
+        </div>
+        <div id="editor-diario" contenteditable="true" spellcheck="true" lang="es"
+             data-placeholder="Querido diario…"></div>
+      </div>
+      <div id="diario-linea" class="linea-temporal oculto"></div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ============ DIÁLOGOS ============ -->
+<dialog id="dialogo-ficha">
+  <form method="dialog" id="form-ficha">
+    <h3 id="dialogo-ficha-titulo">Ficha</h3>
+    <div id="dialogo-ficha-campos"></div>
+    <menu>
+      <button value="cancelar" class="btn-secundario">Cancelar</button>
+      <button value="borrar" id="btn-borrar-ficha" class="btn-peligro">Borrar</button>
+      <button value="guardar" class="btn-primario">Guardar</button>
+    </menu>
+  </form>
+</dialog>
+
+<dialog id="dialogo-relacion">
+  <form method="dialog" id="form-relacion">
+    <h3>Relación entre personajes</h3>
+    <label>De <select id="rel-de"></select></label>
+    <label>A <select id="rel-a"></select></label>
+    <label>Tipo
+      <select id="rel-tipo">
+        <option value="familia">Familia</option>
+        <option value="amor">Amor</option>
+        <option value="amistad">Amistad</option>
+        <option value="conflicto">Conflicto</option>
+        <option value="poder">Poder / jerarquía</option>
+        <option value="otro">Otro</option>
+      </select>
+    </label>
+    <label>Explicación <input type="text" id="rel-texto" placeholder="p. ej. «la traicionó en el cap. 3»"></label>
+    <label class="etiqueta-linea"><input type="checkbox" id="rel-doble"> Doble sentido (↔)</label>
+    <menu>
+      <button value="cancelar" class="btn-secundario">Cancelar</button>
+      <button value="borrar" id="btn-borrar-relacion" class="btn-peligro">Borrar</button>
+      <button value="guardar" class="btn-primario">Guardar</button>
+    </menu>
+  </form>
+</dialog>
+
+<dialog id="dialogo-evento">
+  <form method="dialog" id="form-evento">
+    <h3>Hecho de la novela</h3>
+    <label>Orden <input type="number" id="ev-orden" step="1" required></label>
+    <label>Momento <input type="text" id="ev-momento" placeholder="«Año 3021», «Tres días después»…"></label>
+    <label>Título <input type="text" id="ev-titulo" required placeholder="Qué ocurre"></label>
+    <label>Detalle <textarea id="ev-detalle" rows="3"></textarea></label>
+    <label>Capítulo relacionado <select id="ev-capitulo"><option value="">(ninguno)</option></select></label>
+    <label>Tipo
+      <select id="ev-tipo">
+        <option value="aventura">Aventura</option>
+        <option value="amor">Amor</option>
+        <option value="intriga">Intriga</option>
+        <option value="mundo">Mundo / fantasía</option>
+      </select>
+    </label>
+    <menu>
+      <button value="cancelar" class="btn-secundario">Cancelar</button>
+      <button value="borrar" id="btn-borrar-evento" class="btn-peligro">Borrar</button>
+      <button value="guardar" class="btn-primario">Guardar</button>
+    </menu>
+  </form>
+</dialog>
+
+<dialog id="dialogo-ayuda-voz">
+  <h3>🎙️ Comandos de voz</h3>
+  <table class="tabla-voz">
+    <tr><td>«punto»</td><td>. </td></tr>
+    <tr><td>«coma»</td><td>, </td></tr>
+    <tr><td>«punto y coma»</td><td>; </td></tr>
+    <tr><td>«dos puntos»</td><td>: </td></tr>
+    <tr><td>«signo de interrogación» / «signo de exclamación»</td><td>? / !</td></tr>
+    <tr><td>«punto y aparte»</td><td>nuevo párrafo</td></tr>
+    <tr><td>«nueva línea»</td><td>salto de línea</td></tr>
+    <tr><td>«comillas» / «cerrar comillas»</td><td>« »</td></tr>
+    <tr><td>«raya de diálogo»</td><td>—</td></tr>
+    <tr><td>«abrir paréntesis pe cerrar paréntesis»</td><td>(p) — nueva ficha de personaje</td></tr>
+    <tr><td>«abrir paréntesis ele cerrar paréntesis»</td><td>(l) — lugar</td></tr>
+    <tr><td>«abrir paréntesis o cerrar paréntesis»</td><td>(o) — objeto</td></tr>
+    <tr><td>«abrir paréntesis te cerrar paréntesis»</td><td>(t) — nota de trama</td></tr>
+    <tr><td>«borrar eso»</td><td>borra la última frase dictada</td></tr>
+  </table>
+  <p class="nota">Con un texto <b>seleccionado</b>, lo que dictes lo sustituye.</p>
+  <form method="dialog"><menu><button class="btn-primario">Entendido</button></menu></form>
+</dialog>
+
+<dialog id="dialogo-nombres">
+  <h3>🎲 Generador de nombres</h3>
+  <div class="gen-controles">
+    <label>Tipo
+      <select id="gen-tipo">
+        <option value="p">Personaje</option>
+        <option value="l">Lugar</option>
+        <option value="o">Objeto</option>
+      </select>
+    </label>
+    <label>Estilo
+      <select id="gen-estilo">
+        <option value="epico">Fantasía épica</option>
+        <option value="elfico">Élfico</option>
+        <option value="nordico">Nórdico</option>
+        <option value="oscuro">Oscuro / villanos</option>
+        <option value="hispano">Hispano medieval</option>
+      </select>
+    </label>
+    <label>Género
+      <select id="gen-genero">
+        <option value="indistinto">Indistinto</option>
+        <option value="f">Femenino</option>
+        <option value="m">Masculino</option>
+      </select>
+    </label>
+  </div>
+  <div id="gen-resultados"></div>
+  <p class="nota">Toca un nombre para crear su ficha directamente.</p>
+  <form method="dialog"><menu>
+    <button type="button" id="gen-generar" class="btn-secundario">🎲 Otra tanda</button>
+    <button class="btn-primario">Cerrar</button>
+  </menu></form>
+</dialog>
+
+<dialog id="dialogo-pedir">
+  <form method="dialog" id="form-pedir">
+    <h3 id="pedir-titulo"></h3>
+    <p id="pedir-texto" class="nota"></p>
+    <input type="text" id="pedir-input" autocomplete="off">
+    <menu>
+      <button value="cancelar" class="btn-secundario" id="pedir-cancelar">Cancelar</button>
+      <button value="ok" class="btn-primario" id="pedir-ok">Aceptar</button>
+    </menu>
+  </form>
+</dialog>
+
+<div id="aviso" class="oculto"></div>
+
+<script src="js/datos.js"></script>
+<script src="js/biblioteca-datos.js"></script>
+<script src="js/editor.js"></script>
+<script src="js/dictado.js"></script>
+<script src="js/fichas.js"></script>
+<script src="js/mapa.js"></script>
+<script src="js/tiempo.js"></script>
+<script src="js/entornos.js"></script>
+<script src="js/nombres.js"></script>
+<script src="js/biblioteca.js"></script>
+<script src="js/diario.js"></script>
+<script src="js/exportar.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
