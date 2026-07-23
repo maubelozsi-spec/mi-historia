@@ -42,6 +42,7 @@ var Diario = (function () {
       var en = entradaActiva();
       if (!en) return;
       en.titulo = elTitulo.value;
+      en.actualizadoEl = Datos.ahora();
       Datos.guardar();
       pintarLista();
     });
@@ -138,6 +139,7 @@ var Diario = (function () {
     var en = entradaActiva();
     if (!en) return;
     en.html = elEditor.innerHTML;
+    en.actualizadoEl = Datos.ahora();
     Datos.guardar();
   }
 

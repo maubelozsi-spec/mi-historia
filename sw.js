@@ -1,7 +1,8 @@
 /* Service worker: la app funciona sin conexión y se actualiza sola */
-var CACHE = "mi-historia-v1";
+var CACHE = "mi-historia-v2";
 var ARCHIVOS = [
   "./", "./index.html", "./css/styles.css", "./icon.svg", "./manifest.json",
+  "./js/firebase-config.js", "./js/sync-firebase.js",
   "./js/datos.js", "./js/biblioteca-datos.js", "./js/editor.js", "./js/dictado.js",
   "./js/fichas.js", "./js/mapa.js", "./js/tiempo.js", "./js/entornos.js", "./js/nombres.js",
   "./js/biblioteca.js", "./js/diario.js", "./js/exportar.js", "./js/app.js"

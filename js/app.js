@@ -73,6 +73,7 @@ var App = (function () {
     Nombres.init();
     Diario.init();
     Exportar.init();
+    Sync.init();
 
     document.getElementById("btn-inicio").addEventListener("click", function () { mostrarVista("inicio"); });
     document.querySelectorAll("#nav-principal .nav-btn").forEach(function (b) {

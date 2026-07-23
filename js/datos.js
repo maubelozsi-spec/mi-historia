@@ -54,6 +54,11 @@ var Datos = (function () {
   function guardar(inmediato) {
     var ind = document.getElementById("indicador-guardado");
     if (ind) { ind.classList.add("guardando"); ind.title = "Guardando…"; }
+    if (!(window.Sync && Sync.aplicando)) {
+      var p = proyecto();
+      if (p) p.actualizadoEl = ahora();
+      db.metaActualizadoEl = ahora();
+    }
     clearTimeout(tGuardado);
     var hacer = function () {
       try {
