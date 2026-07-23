@@ -73,7 +73,9 @@ var App = (function () {
     Nombres.init();
     Diario.init();
     Exportar.init();
+    Extras.init();
     Sync.init();
+    setTimeout(Exportar.recordatorioCopia, 2500);
 
     document.getElementById("btn-inicio").addEventListener("click", function () { mostrarVista("inicio"); });
     document.querySelectorAll("#nav-principal .nav-btn").forEach(function (b) {
@@ -122,7 +124,7 @@ var App = (function () {
       np.textContent = p && nombre !== "inicio" ? "— " + p.nombre : "";
     }
 
-    if (nombre === "inicio") pintarProyectos();
+    if (nombre === "inicio") { pintarProyectos(); Extras.pintarIdeas(); }
     else if (nombre === "fichas") Fichas.pintar();
     else if (nombre === "mapa") Mapa.pintar();
     else if (nombre === "tiempo") Tiempo.pintar();
@@ -140,10 +142,12 @@ var App = (function () {
     }
     Datos.db.proyectos.forEach(function (p) {
       var palabras = p.capitulos.reduce(function (s, c) { return s + Editor.contarPalabras(c.html); }, 0);
+      var terminados = p.capitulos.filter(function (c) { return c.estado === "terminado"; }).length;
       var t = document.createElement("div");
       t.className = "proyecto-tarjeta";
       t.innerHTML = "<div><h3></h3><div class='detalle'>" + p.capitulos.length + " capítulos · " +
-        palabras + " palabras · " + p.fichas.length + " fichas</div></div>" +
+        palabras + " palabras · " + p.fichas.length + " fichas" +
+        (terminados ? " · ✅ " + terminados + "/" + p.capitulos.length + " terminados" : "") + "</div></div>" +
         "<div class='proyecto-acciones'>" +
         "<button class='btn-renombra' title='Renombrar'>✏️</button>" +
         "<button class='btn-borra' title='Borrar'>🗑</button></div>";

@@ -53,6 +53,9 @@ var Diario = (function () {
       document.getElementById("panel-entradas").classList.toggle("abierto");
     });
     document.getElementById("btn-reflexion").addEventListener("click", insertarReflexion);
+    document.getElementById("diario-pista-enlace").addEventListener("click", function () {
+      UI.aviso("💡 Tu pista: " + (Datos.db.diario.pista || "(no dejaste pista)"), 6000);
+    });
     document.querySelectorAll(".animo-btn").forEach(function (b) {
       b.addEventListener("click", function () {
         var en = entradaActiva();
@@ -87,6 +90,8 @@ var Diario = (function () {
       ? "Introduce tu código para entrar."
       : "Primera vez: elige un código alfanumérico (letras y números). Apúntalo bien: sin él no se puede entrar.";
     document.getElementById("input-codigo-diario2").classList.toggle("oculto", tieneCodigo);
+    document.getElementById("input-pista-diario").classList.toggle("oculto", tieneCodigo);
+    document.getElementById("diario-pista-enlace").classList.toggle("oculto", !(tieneCodigo && Datos.db.diario.pista));
     document.getElementById("diario-error").textContent = "";
     document.getElementById("input-codigo-diario").value = "";
     document.getElementById("input-codigo-diario2").value = "";
@@ -102,6 +107,7 @@ var Diario = (function () {
       var cod2 = document.getElementById("input-codigo-diario2").value.trim();
       if (cod !== cod2) { err.textContent = "Los dos códigos no coinciden."; return; }
       d.hash = hash(cod);
+      d.pista = document.getElementById("input-pista-diario").value.trim() || null;
       Datos.guardar(true);
     } else if (hash(cod) !== d.hash) {
       err.textContent = "Código incorrecto.";
@@ -113,6 +119,38 @@ var Diario = (function () {
     if (!d.entradas.length) nuevaEntrada();
     else abrirEntrada(d.entradas.slice().sort(porFechaDesc)[0].id);
     pintarLista();
+    pintarTalDia();
+  }
+
+  /* ---------- Tal día como hoy ---------- */
+  function pintarTalDia() {
+    var banner = document.getElementById("tal-dia");
+    banner.classList.add("oculto");
+    var candidatos = [
+      { dias: 365, texto: "hace un año", margen: 5 },
+      { dias: 30, texto: "hace un mes", margen: 3 },
+      { dias: 7, texto: "hace una semana", margen: 1 }
+    ];
+    var hoy = Date.now();
+    for (var i = 0; i < candidatos.length; i++) {
+      var c = candidatos[i];
+      var objetivo = hoy - c.dias * 86400000;
+      var en = Datos.db.diario.entradas.filter(function (e) {
+        return e.id !== entradaId && Math.abs(new Date(e.fecha).getTime() - objetivo) <= c.margen * 86400000;
+      }).sort(porFechaDesc)[0];
+      if (en) {
+        var extracto = (en.html || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 110);
+        if (!extracto) continue;
+        banner.innerHTML = "<span>🕰️ <b>Tal día como hoy, " + c.texto + "</b>, escribiste: «" + extracto +
+          "…»</span> <button class='btn-secundario btn-leer'>Leer</button><button class='btn-icono btn-x' title='Cerrar'>✕</button>";
+        banner.querySelector(".btn-leer").addEventListener("click", (function (id) {
+          return function () { abrirEntrada(id); banner.classList.add("oculto"); };
+        })(en.id));
+        banner.querySelector(".btn-x").addEventListener("click", function () { banner.classList.add("oculto"); });
+        banner.classList.remove("oculto");
+        return;
+      }
+    }
   }
 
   function cerrar() {
@@ -241,9 +279,38 @@ var Diario = (function () {
     }
   }
 
+  /* ---------- Gráfica de ánimo (últimos 30 días) ---------- */
+  function graficaAnimo() {
+    var conAnimo = Datos.db.diario.entradas.filter(function (e) { return e.animo; });
+    if (conAnimo.length < 2) return null;
+    var hoy = new Date(); hoy.setHours(23, 59, 59);
+    var inicio = hoy.getTime() - 29 * 86400000;
+    var puntos = conAnimo.filter(function (e) { return new Date(e.fecha).getTime() >= inicio; })
+      .sort(function (a, b) { return a.fecha.localeCompare(b.fecha); });
+    if (puntos.length < 2) return null;
+    var W = 560, H = 120, mx = 30, my = 12;
+    var xDe = function (e) { return mx + ((new Date(e.fecha).getTime() - inicio) / (29 * 86400000)) * (W - mx - 10); };
+    var yDe = function (e) { return H - my - ((e.animo - 1) / 4) * (H - 2 * my); };
+    var svg = "<svg viewBox='0 0 " + W + " " + H + "' style='width:100%;max-width:600px'>";
+    for (var a = 1; a <= 5; a++) {
+      var y = H - my - ((a - 1) / 4) * (H - 2 * my);
+      svg += "<text x='2' y='" + (y + 4) + "' font-size='11'>" + ANIMOS[a] + "</text>" +
+        "<line x1='" + mx + "' y1='" + y + "' x2='" + (W - 10) + "' y2='" + y + "' stroke='#d8d2c4' stroke-dasharray='3 4'/>";
+    }
+    svg += "<polyline fill='none' stroke='#6a5acd' stroke-width='2' points='" +
+      puntos.map(function (e) { return xDe(e).toFixed(1) + "," + yDe(e).toFixed(1); }).join(" ") + "'/>";
+    puntos.forEach(function (e) {
+      svg += "<circle cx='" + xDe(e).toFixed(1) + "' cy='" + yDe(e).toFixed(1) + "' r='4' fill='#6a5acd'/>";
+    });
+    svg += "</svg>";
+    return "<div class='tarjeta'><h3 style='margin:.2rem 0'>Tu ánimo, último mes</h3>" + svg + "</div>";
+  }
+
   function pintarLineaTemporal() {
     var cont = document.getElementById("diario-linea");
     cont.innerHTML = "";
+    var g = graficaAnimo();
+    if (g) cont.insertAdjacentHTML("beforeend", g);
     var entradas = Datos.db.diario.entradas.slice().sort(porFechaDesc);
     if (!entradas.length) { cont.innerHTML = '<p class="nota">Aún no hay entradas.</p>'; return; }
     var mesActual = "";

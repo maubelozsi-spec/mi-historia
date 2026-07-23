@@ -42,6 +42,8 @@
       <h2>Mis novelas</h2>
       <div id="lista-proyectos" class="lista-proyectos"></div>
       <button id="btn-nueva-novela" class="btn-primario">+ Nueva novela</button>
+      <button id="btn-idea" class="btn-secundario">💡 Idea rápida</button>
+      <div id="lista-ideas"></div>
 
       <p class="nota-pie">Todo se guarda automáticamente en este dispositivo.
         <span id="estado-sync">Sincronización en la nube: pendiente de configurar.</span></p>
@@ -67,6 +69,7 @@
           <span id="contador-palabras" title="Palabras del capítulo / total">0</span>
           <button id="btn-dictar" class="btn-icono btn-mic" title="Dictar (mantén una selección para sustituirla)">🎙️</button>
           <button id="btn-enfoque" class="btn-icono" title="Modo enfoque">⛶</button>
+          <button id="btn-mas" class="btn-icono" title="Más herramientas">⋯</button>
         </div>
       </div>
 
@@ -115,6 +118,7 @@
   <section id="vista-tiempo" class="vista oculto">
     <div class="subnav">
       <button id="btn-nuevo-evento" class="btn-primario btn-mini-primario">+ Nuevo hecho</button>
+      <select id="filtro-personaje" title="Ver solo los hechos de un personaje"><option value="">Todos los personajes</option></select>
       <span class="nota">Los hechos se ordenan por su número de orden. El «momento» es libre: «Año 3021», «La noche del incendio»…</span>
     </div>
     <div id="linea-temporal" class="linea-temporal"></div>
@@ -146,7 +150,10 @@
         <h3>Exportar</h3>
         <p>Descarga tu novela para imprimirla, enviarla o guardarla en tu Drive.</p>
         <button id="btn-exportar-docx" class="btn-primario">📄 Novela en Word (.doc)</button>
+        <button id="btn-exportar-epub" class="btn-secundario">📱 Libro electrónico (.epub)</button>
+        <button id="btn-exportar-manuscrito" class="btn-secundario">🖋️ Formato manuscrito (.doc)</button>
         <button id="btn-exportar-json" class="btn-secundario">🗄️ Copia completa (.json)</button>
+        <p id="estadisticas-novela" class="nota"></p>
       </div>
       <div class="tarjeta">
         <h3>Recuperar</h3>
@@ -186,8 +193,10 @@
         <p id="diario-puerta-texto">Introduce tu código para entrar.</p>
         <input type="password" id="input-codigo-diario" placeholder="Código alfanumérico" autocomplete="off">
         <input type="password" id="input-codigo-diario2" placeholder="Repite el código" autocomplete="off" class="oculto">
+        <input type="text" id="input-pista-diario" placeholder="Pista para recordarlo (opcional, solo tú la entenderás)" autocomplete="off" class="oculto">
         <button id="btn-entrar-diario" class="btn-primario">Entrar</button>
         <p id="diario-error" class="texto-error"></p>
+        <p id="diario-pista-enlace" class="nota oculto" style="cursor:pointer;text-decoration:underline dotted">¿Olvidaste el código? Ver tu pista</p>
       </div>
     </div>
     <!-- Interior del diario -->
@@ -212,6 +221,7 @@
           <button id="btn-reflexion" class="btn-icono" title="Pregunta para reflexionar">💭</button>
           <button id="btn-dictar-diario" class="btn-icono btn-mic" title="Dictar">🎙️</button>
         </div>
+        <div id="tal-dia" class="oculto"></div>
         <div id="barra-animo">
           <span>¿Cómo te sientes?</span>
           <button class="animo-btn" data-animo="1">😞</button>
@@ -275,6 +285,7 @@
     <label>Título <input type="text" id="ev-titulo" required placeholder="Qué ocurre"></label>
     <label>Detalle <textarea id="ev-detalle" rows="3"></textarea></label>
     <label>Capítulo relacionado <select id="ev-capitulo"><option value="">(ninguno)</option></select></label>
+    <label>Personajes que intervienen <div id="ev-personajes" class="lista-checks"></div></label>
     <label>Tipo
       <select id="ev-tipo">
         <option value="aventura">Aventura</option>
@@ -311,6 +322,50 @@
   </table>
   <p class="nota">Con un texto <b>seleccionado</b>, lo que dictes lo sustituye.</p>
   <form method="dialog"><menu><button class="btn-primario">Entendido</button></menu></form>
+</dialog>
+
+<dialog id="dialogo-mas">
+  <h3>Herramientas del capítulo</h3>
+  <div class="lista-mas">
+    <button id="mas-leer" class="btn-secundario">🔊 Leer en voz alta (capítulo o selección)</button>
+    <button id="mas-estado" class="btn-secundario">📝 Estado del capítulo: <b id="mas-estado-texto"></b></button>
+    <button id="mas-recorte" class="btn-secundario">✂️ Guardar la selección como recorte</button>
+    <button id="mas-recortes" class="btn-secundario">📎 Banco de recortes</button>
+    <button id="mas-estilo" class="btn-secundario">🩺 Chequeo de estilo del capítulo</button>
+    <button id="mas-novela" class="btn-secundario">📋 Ficha de la novela (premisa y sinopsis)</button>
+  </div>
+  <form method="dialog"><menu><button class="btn-primario">Cerrar</button></menu></form>
+</dialog>
+
+<dialog id="dialogo-panel">
+  <h3 id="panel-titulo"></h3>
+  <div id="panel-cuerpo"></div>
+  <form method="dialog"><menu><button class="btn-primario">Cerrar</button></menu></form>
+</dialog>
+
+<dialog id="dialogo-novela">
+  <form method="dialog" id="form-novela">
+    <h3>📋 Ficha de la novela</h3>
+    <label>Premisa en una frase <textarea id="nov-premisa" rows="2" placeholder="«Un cartógrafo descubre que los mapas que dibuja cambian la realidad»"></textarea></label>
+    <label>Sinopsis (un párrafo) <textarea id="nov-sinopsis" rows="4"></textarea></label>
+    <label>Género y tono <input type="text" id="nov-genero" placeholder="fantasía y aventuras con amor e intriga"></label>
+    <label>Final previsto (aunque cambie) <textarea id="nov-final" rows="2"></textarea></label>
+    <menu>
+      <button value="cancelar" class="btn-secundario">Cancelar</button>
+      <button value="guardar" class="btn-primario">Guardar</button>
+    </menu>
+  </form>
+</dialog>
+
+<dialog id="dialogo-idea">
+  <form method="dialog" id="form-idea">
+    <h3>💡 Idea rápida</h3>
+    <label>Apúntala antes de que se escape <textarea id="idea-texto" rows="3" placeholder="«¿Y si el faro solo se enciende cuando alguien miente?»"></textarea></label>
+    <menu>
+      <button value="cancelar" class="btn-secundario">Cancelar</button>
+      <button value="guardar" class="btn-primario">Guardar idea</button>
+    </menu>
+  </form>
 </dialog>
 
 <dialog id="dialogo-nombres">
@@ -373,6 +428,8 @@
 <script src="js/tiempo.js"></script>
 <script src="js/entornos.js"></script>
 <script src="js/nombres.js"></script>
+<script src="js/extras.js"></script>
+<script src="js/epub.js"></script>
 <script src="js/biblioteca.js"></script>
 <script src="js/diario.js"></script>
 <script src="js/exportar.js"></script>

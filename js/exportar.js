@@ -4,6 +4,8 @@ var Exportar = (function () {
 
   function init() {
     document.getElementById("btn-exportar-docx").addEventListener("click", exportarWord);
+    document.getElementById("btn-exportar-epub").addEventListener("click", Epub.exportarEpub);
+    document.getElementById("btn-exportar-manuscrito").addEventListener("click", Epub.exportarManuscrito);
     document.getElementById("btn-exportar-json").addEventListener("click", exportarJson);
     document.getElementById("btn-importar").addEventListener("click", function () {
       document.getElementById("input-importar").click();
@@ -82,6 +84,18 @@ var Exportar = (function () {
     UI.confirmar("¿Incluir también Mi diario en la copia? (el diario iría legible dentro del archivo)",
       function () { hacer(true); }, function () { hacer(false); },
       { si: "Sí, con diario", no: "No, solo novelas" });
+    Datos.db.ajustes.ultimaCopiaJson = Datos.hoy();
+    Datos.guardar();
+  }
+
+  function recordatorioCopia() {
+    var a = Datos.db.ajustes;
+    if (!Datos.db.proyectos.length) return;
+    var ultima = a.ultimaCopiaJson;
+    var dias = ultima ? Math.floor((Date.now() - new Date(ultima).getTime()) / 86400000) : 999;
+    if (dias > 30) {
+      UI.aviso("💾 Consejo: hace " + (ultima ? dias + " días" : "mucho") + " de tu última copia .json. Descárgala en «Copias» y súbela a tu Drive.", 7000);
+    }
   }
 
   function importarJson(e) {
@@ -149,7 +163,24 @@ var Exportar = (function () {
     document.getElementById("input-objetivo").value = Datos.db.ajustes.objetivoPalabras || 0;
     var r = Datos.racha();
     document.getElementById("racha-info").textContent = r > 1 ? "🔥 Racha: " + r + " días" : "";
+
+    // estadísticas de la novela abierta
+    var p = Datos.proyecto();
+    var est = document.getElementById("estadisticas-novela");
+    if (p && est) {
+      var palabras = 0, caracteres = 0, terminados = 0;
+      p.capitulos.forEach(function (c) {
+        var t = (c.html || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+        palabras += t ? t.split(" ").length : 0;
+        caracteres += t.length;
+        if (c.estado === "terminado") terminados++;
+      });
+      est.textContent = "«" + p.nombre + "»: " + palabras + " palabras · " + caracteres +
+        " caracteres · ≈" + Math.max(1, Math.round(palabras / 250)) + " páginas · " +
+        terminados + "/" + p.capitulos.length + " capítulos terminados" +
+        (Datos.db.ajustes.ultimaCopiaJson ? " · última copia .json: " + Datos.db.ajustes.ultimaCopiaJson : "");
+    } else if (est) est.textContent = "";
   }
 
-  return { init: init, pintarPanel: pintarPanel };
+  return { init: init, pintarPanel: pintarPanel, recordatorioCopia: recordatorioCopia };
 })();

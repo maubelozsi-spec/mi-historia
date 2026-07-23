@@ -116,7 +116,8 @@ var Editor = (function () {
       var li = document.createElement("li");
       li.className = cap.id === capituloId ? "activo" : "";
       var n = contarPalabras(cap.html);
-      li.innerHTML = '<span class="num">' + (idx + 1) + '.</span> <span class="cap-titulo"></span>' +
+      var iconoEstado = { revision: "🔍", terminado: "✅" }[cap.estado] || "📝";
+      li.innerHTML = '<span class="num">' + (idx + 1) + '.</span> <span class="estado-cap" title="Estado">' + iconoEstado + '</span> <span class="cap-titulo"></span>' +
         '<span class="palabras">' + n + '</span>' +
         '<button class="btn-icono btn-sube" title="Subir">▲</button>' +
         '<button class="btn-icono btn-baja" title="Bajar">▼</button>' +
@@ -282,6 +283,7 @@ var Editor = (function () {
     pintarLista: pintarLista, insertarTexto: insertarTexto, insertarParrafo: insertarParrafo,
     detectarComandos: detectarComandos, contarPalabras: contarPalabras,
     totalPalabras: totalPalabras, actualizarContador: actualizarContador,
+    capActual: capActivo,
     get elEditor() { return elEditor; }
   };
 })();

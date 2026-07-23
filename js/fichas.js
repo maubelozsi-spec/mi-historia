@@ -107,6 +107,16 @@ var Fichas = (function () {
       cont.appendChild(l);
     });
 
+    // apariciones en el texto
+    if (f.tipo !== "t") {
+      var btnAp = document.createElement("button");
+      btnAp.type = "button";
+      btnAp.className = "btn-secundario";
+      btnAp.textContent = "🔎 ¿Dónde aparece en la novela?";
+      btnAp.addEventListener("click", function () { Extras.verApariciones(f); });
+      cont.appendChild(btnAp);
+    }
+
     // relaciones del personaje (solo lectura, se editan en el mapa)
     if (f.tipo === "p") {
       var rels = relacionesDe(f.id);

@@ -16,9 +16,10 @@ var Datos = (function () {
       version: 1,
       proyectos: [],
       proyectoActivo: null,
-      diario: { hash: null, entradas: [] },
+      diario: { hash: null, pista: null, entradas: [] },
+      ideas: [],               // bandeja de ideas rápidas {id, texto, fecha}
       papelera: [],            // {tipo, dato, borradoEl, proyectoId}
-      ajustes: { objetivoPalabras: 0, historicoDias: {} } // historicoDias: {"2026-07-23": 1250}
+      ajustes: { objetivoPalabras: 0, historicoDias: {}, ultimaCopiaJson: null }
     };
   }
 
@@ -27,6 +28,8 @@ var Datos = (function () {
       id: uid(), nombre: nombre, creadoEl: ahora(), actualizadoEl: ahora(),
       capitulos: [nuevoCapitulo("Capítulo 1")],
       capituloActivo: null,
+      info: {},                // premisa, sinopsis, genero, final
+      recortes: [],            // banco de descartes {id, texto, origen, fecha}
       fichas: [],              // {id, tipo:'p|l|o|t', nombre, campos:{}, creadoEl}
       relaciones: [],          // {id, deId, aId, tipo, texto, doble}
       eventos: [],             // {id, orden, momento, titulo, detalle, capituloId, tipo}

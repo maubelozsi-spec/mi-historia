@@ -76,7 +76,7 @@ var Sync = (function () {
       copia.capitulosIds = p.capitulos.map(function (c) { return c.id; });
       docs["proyectos/" + p.id] = copia;
       p.capitulos.forEach(function (c) {
-        docs["capitulos/" + c.id] = { proyectoId: p.id, id: c.id, titulo: c.titulo, html: c.html, actualizadoEl: c.actualizadoEl };
+        docs["capitulos/" + c.id] = { proyectoId: p.id, id: c.id, titulo: c.titulo, html: c.html, estado: c.estado || "borrador", actualizadoEl: c.actualizadoEl };
       });
     });
     db.diario.entradas.forEach(function (e) {
@@ -85,6 +85,8 @@ var Sync = (function () {
     docs["meta/global"] = {
       ajustes: db.ajustes,
       diarioHash: db.diario.hash,
+      diarioPista: db.diario.pista || null,
+      ideas: db.ideas || [],
       proyectoActivo: db.proyectoActivo,
       actualizadoEl: db.metaActualizadoEl || ""
     };
@@ -105,7 +107,7 @@ var Sync = (function () {
       Object.keys(d).forEach(function (k) { if (k !== "capitulosIds") p[k] = d[k]; });
       p.capitulos = (d.capitulosIds || []).map(function (cid) {
         var c = capsPorId[cid];
-        return c ? { id: c.id, titulo: c.titulo, html: c.html, actualizadoEl: c.actualizadoEl } : null;
+        return c ? { id: c.id, titulo: c.titulo, html: c.html, estado: c.estado || "borrador", actualizadoEl: c.actualizadoEl } : null;
       }).filter(Boolean);
       if (!p.capitulos.length) p.capitulos = [Datos.nuevoCapitulo("Capítulo 1")];
       proyectos.push(p);
@@ -117,6 +119,8 @@ var Sync = (function () {
     if (meta) {
       db.ajustes = meta.ajustes || db.ajustes;
       db.diario.hash = meta.diarioHash || db.diario.hash;
+      db.diario.pista = meta.diarioPista || db.diario.pista;
+      db.ideas = meta.ideas || db.ideas || [];
       db.metaActualizadoEl = meta.actualizadoEl;
       if (meta.proyectoActivo && proyectos.some(function (p) { return p.id === meta.proyectoActivo; })) {
         db.proyectoActivo = db.proyectoActivo || meta.proyectoActivo;
