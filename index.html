@@ -42,6 +42,14 @@
       <h2>Mis novelas</h2>
       <div id="lista-proyectos" class="lista-proyectos"></div>
       <button id="btn-nueva-novela" class="btn-primario">+ Nueva novela</button>
+
+      <div class="proyecto-tarjeta tarjeta-acceso-diario" id="btn-diario-inicio">
+        <div>
+          <h3>🔒 Mi diario</h3>
+          <div class="detalle">Tu espacio personal, aparte de las novelas. Protegido con tu código.</div>
+        </div>
+      </div>
+
       <p class="nota-pie">Todo se guarda automáticamente en este dispositivo.
         <span id="estado-sync">Sincronización en la nube: pendiente de configurar.</span></p>
     </div>
@@ -207,7 +215,16 @@
           <button id="btn-toggle-entradas" class="btn-icono" title="Mostrar/ocultar entradas">☰</button>
           <input id="titulo-entrada" type="text" placeholder="Título de la entrada">
           <span id="fecha-entrada"></span>
+          <button id="btn-reflexion" class="btn-icono" title="Pregunta para reflexionar">💭</button>
           <button id="btn-dictar-diario" class="btn-icono btn-mic" title="Dictar">🎙️</button>
+        </div>
+        <div id="barra-animo">
+          <span>¿Cómo te sientes?</span>
+          <button class="animo-btn" data-animo="1">😞</button>
+          <button class="animo-btn" data-animo="2">😕</button>
+          <button class="animo-btn" data-animo="3">😐</button>
+          <button class="animo-btn" data-animo="4">🙂</button>
+          <button class="animo-btn" data-animo="5">😄</button>
         </div>
         <div id="editor-diario" contenteditable="true" spellcheck="true" lang="es"
              data-placeholder="Querido diario…"></div>

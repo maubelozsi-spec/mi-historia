@@ -5,6 +5,27 @@ var Diario = (function () {
   var entradaId = null;
   var elEditor, elTitulo, elLista, elFecha;
 
+  var ANIMOS = { 1: "😞", 2: "😕", 3: "😐", 4: "🙂", 5: "😄" };
+
+  var REFLEXIONES = [
+    "¿Qué ha sido lo mejor de hoy y por qué?",
+    "¿Qué dificultad has afrontado hoy? ¿Qué has aprendido de ella?",
+    "¿Qué te preocupa ahora mismo? ¿Qué parte depende de ti?",
+    "¿A quién le agradeces algo hoy?",
+    "¿Qué te gustaría decirte a ti mismo dentro de un año?",
+    "¿Qué harías mañana si no tuvieras miedo?",
+    "¿Qué has hecho hoy por cuidarte?",
+    "¿Qué emoción ha mandado hoy en ti? ¿Dónde la has notado en el cuerpo?",
+    "Algo no salió como querías. ¿Cómo crees que lo verás dentro de un mes?",
+    "¿Qué pequeño paso puedes dar mañana hacia lo que quieres?",
+    "¿Qué te ha hecho sonreír hoy?",
+    "¿Qué necesitas soltar para estar mejor?",
+    "¿De qué te sientes orgulloso hoy, aunque sea pequeño?",
+    "Si un buen amigo estuviera en tu situación, ¿qué le dirías?",
+    "¿Qué momento de hoy merecería un capítulo en tu novela?",
+    "¿Qué versión de ti quiere salir mañana de la cama?"
+  ];
+
   /* Hash sencillo (djb2 doble) — evita guardar el código en claro.
      Protege tu intimidad frente a quien coja el dispositivo. */
   function hash(txt) {
@@ -30,6 +51,21 @@ var Diario = (function () {
     document.getElementById("btn-salir-diario").addEventListener("click", cerrar);
     document.getElementById("btn-toggle-entradas").addEventListener("click", function () {
       document.getElementById("panel-entradas").classList.toggle("abierto");
+    });
+    document.getElementById("btn-diario-inicio").addEventListener("click", function () {
+      App.mostrarVista("diario"); prepararPuerta();
+    });
+    document.getElementById("btn-reflexion").addEventListener("click", insertarReflexion);
+    document.querySelectorAll(".animo-btn").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var en = entradaActiva();
+        if (!en) return;
+        en.animo = parseInt(b.dataset.animo, 10);
+        en.actualizadoEl = Datos.ahora();
+        Datos.guardar();
+        pintarAnimo();
+        pintarLista();
+      });
     });
     document.getElementById("btn-nueva-entrada").addEventListener("click", nuevaEntrada);
 
@@ -88,7 +124,36 @@ var Diario = (function () {
     document.getElementById("diario-interior").classList.add("oculto");
     document.getElementById("diario-puerta").classList.remove("oculto");
     elEditor.innerHTML = "";
-    App.mostrarVista("escribir");
+    App.mostrarVista("inicio");
+  }
+
+  function insertarReflexion() {
+    var en = entradaActiva();
+    if (!en) return;
+    var q = REFLEXIONES[Math.floor(Math.random() * REFLEXIONES.length)];
+    var p = document.createElement("p");
+    p.className = "reflexion";
+    p.innerHTML = "<i>💭 " + q + "</i>";
+    elEditor.appendChild(p);
+    var respuesta = document.createElement("p");
+    respuesta.innerHTML = "<br>";
+    elEditor.appendChild(respuesta);
+    // cursor en el párrafo de respuesta
+    var sel = window.getSelection();
+    var r = document.createRange();
+    r.setStart(respuesta, 0);
+    r.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(r);
+    elEditor.focus();
+    alEscribir();
+  }
+
+  function pintarAnimo() {
+    var en = entradaActiva();
+    document.querySelectorAll(".animo-btn").forEach(function (b) {
+      b.classList.toggle("elegido", !!en && parseInt(b.dataset.animo, 10) === en.animo);
+    });
   }
 
   function alSalirDeVista() { if (abierto) { abierto = false; document.getElementById("diario-interior").classList.add("oculto"); document.getElementById("diario-puerta").classList.remove("oculto"); elEditor.innerHTML = ""; entradaId = null; } }
@@ -120,6 +185,7 @@ var Diario = (function () {
     elFecha.textContent = new Date(en.fecha).toLocaleDateString("es-ES");
     elEditor.innerHTML = en.html || "";
     modoVista("lista", true);
+    pintarAnimo();
     pintarLista();
   }
 
@@ -150,7 +216,8 @@ var Diario = (function () {
       var li = document.createElement("li");
       li.className = en.id === entradaId ? "activo" : "";
       li.innerHTML = '<span class="cap-titulo"></span><button class="btn-icono btn-borra" title="Borrar">🗑</button>';
-      li.querySelector(".cap-titulo").textContent = en.titulo || new Date(en.fecha).toLocaleDateString("es-ES");
+      li.querySelector(".cap-titulo").textContent = (en.animo ? ANIMOS[en.animo] + " " : "") +
+        (en.titulo || new Date(en.fecha).toLocaleDateString("es-ES"));
       li.addEventListener("click", function (e) {
         if (e.target.tagName === "BUTTON") return;
         abrirEntrada(en.id);
@@ -197,7 +264,8 @@ var Diario = (function () {
       div.className = "lt-item";
       var resumen = (en.html || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 140);
       div.innerHTML = '<div class="lt-momento"></div><h4></h4><p></p>';
-      div.querySelector(".lt-momento").textContent = f.toLocaleDateString("es-ES", { weekday: "long", day: "numeric" });
+      div.querySelector(".lt-momento").textContent = f.toLocaleDateString("es-ES", { weekday: "long", day: "numeric" }) +
+        (en.animo ? "  ·  " + ANIMOS[en.animo] : "");
       div.querySelector("h4").textContent = en.titulo || "";
       div.querySelector("p").textContent = resumen + (resumen.length >= 140 ? "…" : "");
       div.addEventListener("click", function () { abrirEntrada(en.id); });

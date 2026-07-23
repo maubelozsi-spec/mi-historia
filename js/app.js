@@ -114,6 +114,14 @@ var App = (function () {
     var nav = document.getElementById("nav-principal");
     nav.classList.toggle("oculto", nombre === "inicio" || nombre === "diario" || !Datos.proyecto());
 
+    // el diario es un espacio aparte: la cabecera lo refleja
+    var np = document.getElementById("nombre-proyecto");
+    if (nombre === "diario") np.textContent = "— Mi diario 🔒";
+    else {
+      var p = Datos.proyecto();
+      np.textContent = p && nombre !== "inicio" ? "— " + p.nombre : "";
+    }
+
     if (nombre === "inicio") pintarProyectos();
     else if (nombre === "fichas") Fichas.pintar();
     else if (nombre === "mapa") Mapa.pintar();
