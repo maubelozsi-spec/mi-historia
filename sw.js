@@ -1,5 +1,5 @@
 /* Service worker: la app funciona sin conexión y se actualiza sola */
-var CACHE = "mi-historia-v3";
+var CACHE = "mi-historia-v4";
 var ARCHIVOS = [
   "./", "./index.html", "./css/styles.css", "./icon.svg", "./manifest.json",
   "./js/firebase-config.js", "./js/sync-firebase.js",
