@@ -52,9 +52,6 @@ var Diario = (function () {
     document.getElementById("btn-toggle-entradas").addEventListener("click", function () {
       document.getElementById("panel-entradas").classList.toggle("abierto");
     });
-    document.getElementById("btn-diario-inicio").addEventListener("click", function () {
-      App.mostrarVista("diario"); prepararPuerta();
-    });
     document.getElementById("btn-reflexion").addEventListener("click", insertarReflexion);
     document.querySelectorAll(".animo-btn").forEach(function (b) {
       b.addEventListener("click", function () {

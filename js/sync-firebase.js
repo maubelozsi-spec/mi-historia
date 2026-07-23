@@ -28,23 +28,24 @@ var Sync = (function () {
   }
 
   function pintarBoton(modo) { // "entrar" | "salir" | null
-    var tarjeta = document.getElementById("tarjeta-sync");
-    if (!tarjeta) return;
-    var btn = document.getElementById("btn-sync-sesion");
-    if (!btn) {
-      btn = document.createElement("button");
-      btn.id = "btn-sync-sesion";
-      btn.className = "btn-primario";
-      tarjeta.appendChild(btn);
-      btn.addEventListener("click", function () {
-        if (btn.dataset.modo === "entrar") entrar();
-        else salir();
-      });
-    }
-    if (!modo) { btn.style.display = "none"; return; }
-    btn.style.display = "";
-    btn.dataset.modo = modo;
-    btn.textContent = modo === "entrar" ? "🔑 Acceder con Google" : "Cerrar sesión de la nube";
+    ["tarjeta-sync", "sync-inicio"].forEach(function (idCont) {
+      var cont = document.getElementById(idCont);
+      if (!cont) return;
+      var btn = cont.querySelector(".btn-sync-sesion");
+      if (!btn) {
+        btn = document.createElement("button");
+        btn.className = "btn-sync-sesion btn-primario";
+        cont.appendChild(btn);
+        btn.addEventListener("click", function () {
+          if (btn.dataset.modo === "entrar") entrar();
+          else salir();
+        });
+      }
+      if (!modo) { btn.style.display = "none"; return; }
+      btn.style.display = "";
+      btn.dataset.modo = modo;
+      btn.textContent = modo === "entrar" ? "🔑 Acceder con Google" : "Cerrar sesión de la nube";
+    });
   }
 
   function idsVistos() {
