@@ -312,7 +312,18 @@ var Sync = (function () {
   function subir(db) {
     if (!activo || aplicando) return;
     clearTimeout(timerSubida);
-    timerSubida = setTimeout(function () {
+    timerSubida = setTimeout(function () { empujar(db); }, 1500);
+  }
+
+  // al ocultar/cerrar la app, empuja lo pendiente SIN esperar
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "hidden" && activo) {
+      clearTimeout(timerSubida);
+      empujar(Datos.db);
+    }
+  });
+
+  function empujar(db) {
       try {
         var docs = separar(db);
         var lote = fs.batch(), cambios = 0;
@@ -339,7 +350,6 @@ var Sync = (function () {
           lote.commit().catch(function (e) { console.error("Error subiendo", e); });
         }
       } catch (e) { console.error(e); }
-    }, 1500);
   }
 
   return {
