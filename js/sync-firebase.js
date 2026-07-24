@@ -218,8 +218,11 @@ var Sync = (function () {
           var tRem = (rem.actualizadoEl || rem.fecha || "");
           finales[ruta] = tRem > tLoc ? rem : loc;
         } else if (rem && !loc) {
-          // ¿nuevo en otro dispositivo, o borrado aquí?
-          finales[ruta] = vistos[ruta] ? null : rem;   // null = borrar en la nube
+          // Solo existe en la nube: SIEMPRE se restaura en este dispositivo.
+          // (Nunca borramos la nube en la fusión inicial: si un dispositivo
+          // pierde sus datos locales, la nube es el salvavidas, no al revés.
+          // Los borrados hechos a propósito se propagan solo en vivo.)
+          finales[ruta] = rem;
         } else {
           finales[ruta] = loc; // solo local: se subirá
         }
@@ -233,11 +236,11 @@ var Sync = (function () {
       Datos.guardar(true);
       aplicando = false;
 
-      // sube diferencias y borra los marcados
+      // sube diferencias (en la fusión inicial nunca se borra nada de la nube)
       var lote = fs.batch(), cambios = 0;
       Object.keys(finales).forEach(function (ruta) {
         var f = finales[ruta];
-        if (f === null) { lote.delete(ref(ruta)); cambios++; cache[ruta] = undefined; return; }
+        if (!f) return;
         var json = JSON.stringify(f);
         if (JSON.stringify(remotos[ruta]) !== json) { lote.set(ref(ruta), f); cambios++; }
         cache[ruta] = json;
@@ -319,11 +322,18 @@ var Sync = (function () {
           if (cache[ruta] !== json) { lote.set(ref(ruta), docs[ruta]); cache[ruta] = json; vistos[ruta] = 1; cambios++; }
         });
         // borrados locales → borrar en la nube
-        Object.keys(cache).forEach(function (ruta) {
-          if (cache[ruta] !== undefined && !docs[ruta] && ruta !== "meta/global") {
-            lote.delete(ref(ruta)); cache[ruta] = undefined; delete vistos[ruta]; cambios++;
-          }
-        });
+        // Válvula de seguridad: si lo local se ha quedado sin NINGUNA novela
+        // pero la nube tenía varias, no borramos nada (algo fue mal en local).
+        var proyectosLocales = Object.keys(docs).filter(function (r) { return r.indexOf("proyectos/") === 0; }).length;
+        var proyectosNube = Object.keys(cache).filter(function (r) { return r.indexOf("proyectos/") === 0 && cache[r] !== undefined; }).length;
+        var puedeBorrar = proyectosLocales > 0 || proyectosNube === 0;
+        if (puedeBorrar) {
+          Object.keys(cache).forEach(function (ruta) {
+            if (cache[ruta] !== undefined && !docs[ruta] && ruta !== "meta/global") {
+              lote.delete(ref(ruta)); cache[ruta] = undefined; delete vistos[ruta]; cambios++;
+            }
+          });
+        }
         if (cambios) {
           guardarIdsVistos(vistos);
           lote.commit().catch(function (e) { console.error("Error subiendo", e); });
