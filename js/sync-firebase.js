@@ -25,6 +25,21 @@ var Sync = (function () {
     var tarjeta = document.getElementById("texto-sync");
     if (tarjeta) tarjeta.textContent = texto;
     pintarBoton(conBoton);
+
+    // icono de nube en la cabecera: siempre visible cuando hay Firebase configurado
+    var nube = document.getElementById("indicador-nube");
+    if (nube && window.FIREBASE_CONFIG) {
+      nube.classList.remove("oculto");
+      if (conBoton === "salir") {
+        nube.textContent = "☁️";
+        nube.title = "Sincronizado con tu nube";
+        nube.classList.remove("nube-aviso");
+      } else {
+        nube.textContent = "⚠️";
+        nube.title = "SIN sesión de nube: lo que escribas queda solo en este dispositivo. Entra con Google en la pantalla de inicio.";
+        nube.classList.add("nube-aviso");
+      }
+    }
   }
 
   function pintarBoton(modo) { // "entrar" | "salir" | null

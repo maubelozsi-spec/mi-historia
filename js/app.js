@@ -92,6 +92,12 @@ var App = (function () {
       }
     });
 
+    // pide al navegador almacenamiento persistente: evita que borre los datos
+    // de la app cuando libera espacio
+    if (navigator.storage && navigator.storage.persist) {
+      navigator.storage.persist().catch(function () {});
+    }
+
     // service worker para PWA (solo funciona bajo https o localhost)
     if ("serviceWorker" in navigator && location.protocol !== "file:") {
       navigator.serviceWorker.register("sw.js").catch(function () {});
